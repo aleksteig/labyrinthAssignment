@@ -36,6 +36,7 @@ let pallet = {
     "B": ANSI.COLOR.GREEN,
     "D": ANSI.COLOR.BLACK,
     "X": ANSI.COLOR.WHITE,
+    "♨︎": ANSI.COLOR.YELLOW,
 }
 
 
@@ -50,6 +51,7 @@ const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$";
 const ENEMY = "X";
+const TELEPORTER = "T";
 const DOOR_TO_LEVEL_1 = "1";
 const DOOR_TO_LEVEL_2 = "2";
 const DOOR_TO_LEVEL_3 = "3";
@@ -60,6 +62,7 @@ let items = [];
 
 const THINGS = [LOOT, EMPTY, ENEMY];
 const INTERACTIBLES = [DOOR_TO_LEVEL_1, DOOR_TO_LEVEL_2, DOOR_TO_LEVEL_3];
+const OTHER_INTERACTIBLES = [TELEPORTER];
 
 let eventText = "";
 
@@ -152,13 +155,37 @@ class Labyrinth {
             level[playerPos.row][playerPos.col] = EMPTY;
             level[tRow][tcol] = HERO;
 
-            playerPos.row = tRow;
-            playerPos.col = tcol;
-
             isDirty = true;
 
         }else {
             direction *= -1;
+        }
+
+        if(OTHER_INTERACTIBLES.includes(level[tRow][tcol])){
+            let currentItem = level[tRow][tcol];
+            if (currentItem == TELEPORTER){
+                level[playerPos.row][playerPos.col] = EMPTY;
+                level[tRow][tcol] = EMPTY;
+                playerPos.row = null;
+                if (playerPos.row == null) {
+                    for (let row = 0; row < level.length; row++) {
+                        for (let col = 0; col < level[row].length; col++) {
+                            if (level[row][col] == TELEPORTER) {
+                                tRow = row;
+                                tcol = col;
+                                level[tRow][tcol] = HERO;
+                                playerPos.row = tRow;
+                                playerPos.col = tcol;
+                                isDirty = true;
+                                break;
+                            }
+                        }
+                        if (playerPos.row != undefined) {
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
