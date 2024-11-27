@@ -26,7 +26,7 @@ function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
     return levels;
 }
 
-let levelData = readMapFile(levels[startingLevel]);
+let levelData = readMapFile(levels[thirdLevel]);
 let level = levelData;
 
 let pallet = {
@@ -35,7 +35,7 @@ let pallet = {
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
     "X": ANSI.COLOR.BLACK,
-    "♨︎": ANSI.COLOR.YELLOW,
+    "\u2668": ANSI.COLOR.YELLOW,
 }
 
 let isDirty = true;
@@ -49,7 +49,7 @@ const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$";
 const ENEMY = "X";
-const TELEPORTER = "T";
+const TELEPORTER = "\u2668";
 const DOOR_TO_LEVEL_1 = "1";
 const DOOR_TO_LEVEL_2 = "2";
 const DOOR_TO_LEVEL_3 = "3";
