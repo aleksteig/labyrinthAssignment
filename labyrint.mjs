@@ -34,11 +34,9 @@ let pallet = {
     "H": ANSI.COLOR.RED,
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
-    "D": ANSI.COLOR.BLACK,
-    "X": ANSI.COLOR.WHITE,
+    "X": ANSI.COLOR.BLACK,
     "♨︎": ANSI.COLOR.YELLOW,
 }
-
 
 let isDirty = true;
 
@@ -76,6 +74,40 @@ const playerStats = {
 class Labyrinth {
 
     update() {
+        let enemies = [];
+        let patrolPattern = {
+            horizontal: {drow: 0, dcol: 1},
+            vertical: {drow: 1, dcol: 0},
+            standStill: {drow: 0, dcol: 0}
+        }
+        for (let row = 0; row < level.length; row++) {
+            for (let col = 0; col < level[row].length; col++) {
+                if (level[row][col] == ENEMY) {
+                    enemies.push({
+                    row: row,
+                    col: col,
+                    direction: patrolPattern.horizontal,
+                    })
+                }
+            }
+        }
+
+        for(let enemy of enemies){
+            let newRow = enemy.row + enemy.direction.drow
+            let newCol = enemy.col + enemy.direction.dcol
+
+            if(level[newRow] && level[newRow][newCol] === EMPTY){
+                level[enemy.row][enemy.col] = EMPTY;
+                enemy.row = newRow;
+                enemy.col = newCol;
+                level[enemy.row][enemy.col] = ENEMY;
+                isDirty = true;
+            }else{
+                enemy.direction *= -1;
+            }
+        }
+
+        
 
         if (playerPos.row == null) {
             for (let row = 0; row < level.length; row++) {
