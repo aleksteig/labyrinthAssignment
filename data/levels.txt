@@ -1,2 +1,5 @@
 start:map1.txt
+startReEnter:start_re_enter.txt
 aSharpPlace:sharp.txt
+sharpPlaceReEnter:sharp_re_enter.txt
+oasis:oasis.txt

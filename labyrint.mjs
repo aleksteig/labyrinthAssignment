@@ -2,10 +2,14 @@ import ANSI from "./utils/ANSI.mjs";
 import KeyBoardManager from "./utils/KeyBoardManager.mjs";
 import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
+import { start } from "repl";
 
 
 const startingLevel = CONST.START_LEVEL_ID;
+const re_enter_first_level = CONST.FIRST_LEVEL_RE_ENTER_ID;
 const secondLevel = CONST.SECOND_LEVEL_ID;
+const re_enter_second_level = CONST.SECOND_LEVEL_RE_ENTER_ID;
+const thirdLevel = CONST.THIRD_LEVEL_ID;
 const levels = loadLevelListings();
 
 function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
@@ -31,6 +35,7 @@ let pallet = {
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
     "D": ANSI.COLOR.BLACK,
+    "X": ANSI.COLOR.WHITE,
 }
 
 
@@ -44,14 +49,17 @@ let playerPos = {
 const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$";
-const DOOR = "D";
+const ENEMY = "X";
+const DOOR_TO_LEVEL_1 = "1";
+const DOOR_TO_LEVEL_2 = "2";
+const DOOR_TO_LEVEL_3 = "3";
 
 let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY];
-const INTERACTIBLES = [DOOR];
+const THINGS = [LOOT, EMPTY, ENEMY];
+const INTERACTIBLES = [DOOR_TO_LEVEL_1, DOOR_TO_LEVEL_2, DOOR_TO_LEVEL_3];
 
 let eventText = "";
 
@@ -69,7 +77,7 @@ class Labyrinth {
         if (playerPos.row == null) {
             for (let row = 0; row < level.length; row++) {
                 for (let col = 0; col < level[row].length; col++) {
-                    if (level[row][col] == "H") {
+                    if (level[row][col] == HERO) {
                         playerPos.row = row;
                         playerPos.col = col;
                         break;
@@ -100,11 +108,47 @@ class Labyrinth {
         let tcol = playerPos.col + (1 * dcol);
 
         if(INTERACTIBLES.includes(level[tRow][tcol])){
+            playerPos.row = null;
+            playerPos.col = null;
+            
             let interactible = level[tRow][tcol];
-            if (interactible == DOOR){
-                levelData = readMapFile(levels[secondLevel]);
+            if (interactible == DOOR_TO_LEVEL_1){
+                levelData = readMapFile(levels[re_enter_first_level]);
+                level = levelData;
+            }else if(interactible == DOOR_TO_LEVEL_2){
+                if(tRow >= 2){
+                    levelData = readMapFile(levels[secondLevel]);
+                    level = levelData;
+                }else if(tRow <= 1){
+                    levelData = readMapFile(levels[re_enter_second_level]);
+                    level = levelData;
+                }
+            }else if(interactible == DOOR_TO_LEVEL_3){
+                levelData = readMapFile(levels[thirdLevel]);
                 level = levelData;
             }
+            tRow = null;
+            tcol = null;
+            if (playerPos.row == null) {
+                for (let row = 0; row < level.length; row++) {
+                    for (let col = 0; col < level[row].length; col++) {
+                        if (level[row][col] == HERO) {
+                            playerPos.row = row;
+                            playerPos.col = col;
+                            break;
+                        }
+                    }
+                    if (playerPos.row != undefined) {
+                        break;
+                    }
+                }
+            }
+            drow = 0;
+            dcol = 0;
+
+            tRow = playerPos.row + (1 * drow);
+            tcol = playerPos.col + (1 * dcol);
+            
             level[playerPos.row][playerPos.col] = EMPTY;
             level[tRow][tcol] = HERO;
 
@@ -124,6 +168,10 @@ class Labyrinth {
                 let loot = Math.round(Math.random() * 7) + 3;
                 playerStats.chash += loot;
                 eventText = `Player gained ${loot}$`;
+            } else if (currentItem == ENEMY){
+                let playerHP = Math.round(Math.random() * 3);
+                playerStats.hp -= playerHP;
+                eventText = `Player lost ${playerHP} amount of HP in battle`;
             }
 
             // Move the HERO
