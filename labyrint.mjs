@@ -5,6 +5,7 @@ import * as CONST from "./constants.mjs";
 
 
 const startingLevel = CONST.START_LEVEL_ID;
+const secondLevel = CONST.SECOND_LEVEL_ID;
 const levels = loadLevelListings();
 
 function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
@@ -29,6 +30,7 @@ let pallet = {
     "H": ANSI.COLOR.RED,
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
+    "D": ANSI.COLOR.BLACK,
 }
 
 
@@ -41,13 +43,15 @@ let playerPos = {
 
 const EMPTY = " ";
 const HERO = "H";
-const LOOT = "$"
+const LOOT = "$";
+const DOOR = "D";
 
 let direction = -1;
 
 let items = [];
 
 const THINGS = [LOOT, EMPTY];
+const INTERACTIBLES = [DOOR];
 
 let eventText = "";
 
@@ -94,6 +98,24 @@ class Labyrinth {
 
         let tRow = playerPos.row + (1 * drow);
         let tcol = playerPos.col + (1 * dcol);
+
+        if(INTERACTIBLES.includes(level[tRow][tcol])){
+            let interactible = level[tRow][tcol];
+            if (interactible == DOOR){
+                levelData = readMapFile(levels[secondLevel]);
+                level = levelData;
+            }
+            level[playerPos.row][playerPos.col] = EMPTY;
+            level[tRow][tcol] = HERO;
+
+            playerPos.row = tRow;
+            playerPos.col = tcol;
+
+            isDirty = true;
+
+        }else {
+            direction *= -1;
+        }
 
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
 
