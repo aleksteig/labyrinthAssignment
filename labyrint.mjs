@@ -26,7 +26,7 @@ function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
     return levels;
 }
 
-let levelData = readMapFile(levels[thirdLevel]);
+let levelData = readMapFile(levels[startingLevel]);
 let level = levelData;
 
 let pallet = {
@@ -237,14 +237,19 @@ class Labyrinth {
             let newRow = enemy.row;
             let newCol = enemy.col + enemy.direction;
 
-            // Checks to see if the position the enemy moves to is a player, and if it is, damages the player
-            if (newRow === playerPos.row && newCol === playerPos.col) {
+            // Checks to see if the player is nearby the enemy (to allow for attacks from above and below)
+            let isPlayerNearby = 
+                (newRow === playerPos.row && newCol === playerPos.col) ||
+                (enemy.row - 1 === playerPos.row && enemy.col === playerPos.col) ||
+                (enemy.row + 1 === playerPos.row && enemy.col === playerPos.col);
 
+            // Based on if the enemy was nearby, deals up to 3 damage and removes them from the current level
+            if (isPlayerNearby) {
                 let damage = Math.floor(Math.random() * 3);
                 playerStats.hp -= damage;
                 eventText = `Player lost ${damage} HP from an enemy attack!`;
 
-                // Removes the enemy from the current level so that the player can not take constant damage from them
+                // Remove the enemy from the level to prevent constant damage
                 this.enemies.splice(i, 1);
                 level[enemy.row][enemy.col] = EMPTY;
 
