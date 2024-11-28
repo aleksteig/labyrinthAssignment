@@ -1,4 +1,4 @@
-import ANSI from "./utils/ANSI.mjs";
+import {ANSI} from "./utils/ANSI.mjs";
 import KeyBoardManager from "./utils/KeyBoardManager.mjs";
 import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
@@ -72,6 +72,11 @@ const playerStats = {
 }
 
 class Labyrinth {
+
+    constructor() {
+        this.lastEventTime = 0;
+        this.eventDuration = 2000;
+    }
 
     update() {
 
@@ -196,6 +201,7 @@ class Labyrinth {
                 let loot = Math.round(Math.random() * 7) + 3;
                 playerStats.chash += loot;
                 eventText = `Player gained ${loot}$`;
+                this.lastEventTime = Date.now();
             }
 
             level[playerPos.row][playerPos.col] = EMPTY;
@@ -248,6 +254,7 @@ class Labyrinth {
                 let damage = Math.floor(Math.random() * 3);
                 playerStats.hp -= damage;
                 eventText = `Player lost ${damage} HP from an enemy attack!`;
+                this.lastEventTime = Date.now();
 
                 // Remove the enemy from the level to prevent constant damage
                 this.enemies.splice(i, 1);
@@ -306,8 +313,9 @@ class Labyrinth {
         }
 
         console.log(rendring);
-        if (eventText != "") {
+        if (eventText != "" && (Date.now() - this.lastEventTime) < this.eventDuration) {
             console.log(eventText);
+        }else{
             eventText = "";
         }
     }
