@@ -58,7 +58,7 @@ let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY, ENEMY];
+const THINGS = [LOOT, EMPTY];
 const INTERACTIBLES = [DOOR_TO_LEVEL_1, DOOR_TO_LEVEL_2, DOOR_TO_LEVEL_3];
 const OTHER_INTERACTIBLES = [TELEPORTER];
 
@@ -67,47 +67,13 @@ let eventText = "";
 const HP_MAX = 10;
 
 const playerStats = {
-    hp: 8,
+    hp: 10,
     chash: 0
 }
 
 class Labyrinth {
 
     update() {
-        let enemies = [];
-        let patrolPattern = {
-            horizontal: {drow: 0, dcol: 1},
-            vertical: {drow: 1, dcol: 0},
-            standStill: {drow: 0, dcol: 0}
-        }
-        for (let row = 0; row < level.length; row++) {
-            for (let col = 0; col < level[row].length; col++) {
-                if (level[row][col] == ENEMY) {
-                    enemies.push({
-                    row: row,
-                    col: col,
-                    direction: patrolPattern.horizontal,
-                    })
-                }
-            }
-        }
-
-        for(let enemy of enemies){
-            let newRow = enemy.row + enemy.direction.drow
-            let newCol = enemy.col + enemy.direction.dcol
-
-            if(level[newRow] && level[newRow][newCol] === EMPTY){
-                level[enemy.row][enemy.col] = EMPTY;
-                enemy.row = newRow;
-                enemy.col = newCol;
-                level[enemy.row][enemy.col] = ENEMY;
-                isDirty = true;
-            }else{
-                enemy.direction *= -1;
-            }
-        }
-
-        
 
         if (playerPos.row == null) {
             for (let row = 0; row < level.length; row++) {
@@ -124,29 +90,29 @@ class Labyrinth {
             }
         }
 
-        let drow = 0;
-        let dcol = 0;
+        let dRow = 0;
+        let dCol = 0;
 
         if (KeyBoardManager.isUpPressed()) {
-            drow = -1;
+            dRow = -1;
         } else if (KeyBoardManager.isDownPressed()) {
-            drow = 1;
+            dRow = 1;
         }
-
         if (KeyBoardManager.isLeftPressed()) {
-            dcol = -1;
+            dCol = -1;
         } else if (KeyBoardManager.isRightPressed()) {
-            dcol = 1;
+            dCol = 1;
         }
 
-        let tRow = playerPos.row + (1 * drow);
-        let tcol = playerPos.col + (1 * dcol);
+        let tRow = playerPos.row + (1 * dRow);
+        let tCol = playerPos.col + (1 * dCol);
 
-        if(INTERACTIBLES.includes(level[tRow][tcol])){
+        if(INTERACTIBLES.includes(level[tRow][tCol])){
+
             playerPos.row = null;
             playerPos.col = null;
             
-            let interactible = level[tRow][tcol];
+            let interactible = level[tRow][tCol];
             if (interactible == DOOR_TO_LEVEL_1){
                 levelData = readMapFile(levels[re_enter_first_level]);
                 level = levelData;
@@ -162,8 +128,9 @@ class Labyrinth {
                 levelData = readMapFile(levels[thirdLevel]);
                 level = levelData;
             }
-            tRow = null;
-            tcol = null;
+
+            this.enemies = null;
+
             if (playerPos.row == null) {
                 for (let row = 0; row < level.length; row++) {
                     for (let col = 0; col < level[row].length; col++) {
@@ -178,36 +145,38 @@ class Labyrinth {
                     }
                 }
             }
-            drow = 0;
-            dcol = 0;
 
-            tRow = playerPos.row + (1 * drow);
-            tcol = playerPos.col + (1 * dcol);
+            dRow = 0;
+            dCol = 0;
+
+            tRow = playerPos.row + (1 * dRow);
+            tCol = playerPos.col + (1 * dCol);
             
             level[playerPos.row][playerPos.col] = EMPTY;
-            level[tRow][tcol] = HERO;
-
-            isDirty = true;
+            level[tRow][tCol] = HERO;
 
         }else {
             direction *= -1;
         }
 
-        if(OTHER_INTERACTIBLES.includes(level[tRow][tcol])){
-            let currentItem = level[tRow][tcol];
+        if(OTHER_INTERACTIBLES.includes(level[tRow][tCol])){
+
+            let currentItem = level[tRow][tCol];
             if (currentItem == TELEPORTER){
+
                 level[playerPos.row][playerPos.col] = EMPTY;
-                level[tRow][tcol] = EMPTY;
+                level[tRow][tCol] = EMPTY;
                 playerPos.row = null;
+
                 if (playerPos.row == null) {
                     for (let row = 0; row < level.length; row++) {
                         for (let col = 0; col < level[row].length; col++) {
                             if (level[row][col] == TELEPORTER) {
                                 tRow = row;
-                                tcol = col;
-                                level[tRow][tcol] = HERO;
+                                tCol = col;
+                                level[tRow][tCol] = HERO;
                                 playerPos.row = tRow;
-                                playerPos.col = tcol;
+                                playerPos.col = tCol;
                                 isDirty = true;
                                 break;
                             }
@@ -220,32 +189,88 @@ class Labyrinth {
             }
         }
 
-        if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
+        if (THINGS.includes(level[tRow][tCol])) {
 
-            let currentItem = level[tRow][tcol];
+            let currentItem = level[tRow][tCol];
             if (currentItem == LOOT) {
                 let loot = Math.round(Math.random() * 7) + 3;
                 playerStats.chash += loot;
                 eventText = `Player gained ${loot}$`;
-            } else if (currentItem == ENEMY){
-                let playerHP = Math.round(Math.random() * 3);
-                playerStats.hp -= playerHP;
-                eventText = `Player lost ${playerHP} amount of HP in battle`;
             }
 
-            // Move the HERO
             level[playerPos.row][playerPos.col] = EMPTY;
-            level[tRow][tcol] = HERO;
+            level[tRow][tCol] = HERO;
 
-            // Update the HERO
             playerPos.row = tRow;
-            playerPos.col = tcol;
+            playerPos.col = tCol;
 
-            // Make the draw function draw.
-            isDirty = true;
         } else {
             direction *= -1;
         }
+
+        // Find enemy coordinates and push it and their states to an alterable array
+        const PATROL_LIMIT = 2;
+        if (!this.enemies) {
+            this.enemies = [];
+            for (let row = 0; row < level.length; row++) {
+                for (let col = 0; col < level[row].length; col++) {
+                    if (level[row][col] === ENEMY) {
+                        this.enemies.push({
+                            row,
+                            col,
+                            direction: 1, // Sets initial movement to the right
+                            distanceMoved: 0 // Counts the distance moved to allow for changing direction after reaching PATROL_LIMIT
+                        });
+                    }
+                }
+            }
+        }
+
+        // Clears the enemy's previous positions so as to not duplicate their position after moving
+        for (let enemy of this.enemies) {
+            level[enemy.row][enemy.col] = EMPTY;
+        }
+
+        // Enemy movement (Only horizontal movement)
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+            let enemy = this.enemies[i];
+            let newRow = enemy.row;
+            let newCol = enemy.col + enemy.direction;
+
+            // Checks to see if the position the enemy moves to is a player, and if it is, damages the player
+            if (newRow === playerPos.row && newCol === playerPos.col) {
+
+                let damage = Math.floor(Math.random() * 3);
+                playerStats.hp -= damage;
+                eventText = `Player lost ${damage} HP from an enemy attack!`;
+
+                // Removes the enemy from the current level so that the player can not take constant damage from them
+                this.enemies.splice(i, 1);
+                level[enemy.row][enemy.col] = EMPTY;
+
+                isDirty = true;
+                continue;
+            }
+
+            // Checks to see if the new position of the enemy is a wall or an object and changes direction if patrol limit is reached or an object that isn't the player is hit
+            let isWithinBounds = newCol >= 0 && newCol < level[newRow].length;
+            if (isWithinBounds && level[newRow][newCol] === EMPTY && enemy.distanceMoved < PATROL_LIMIT) {
+                // Based on the check, moves it
+                enemy.col = newCol;
+                enemy.distanceMoved++;
+            } else {
+                // Changes direction and sets distance moved to 0 to allow for a patrol back again
+                enemy.direction *= -1;
+                enemy.distanceMoved = 0;
+            }
+        }
+
+        // Places the enemies into the level when you re-enter a level where you killed some of them before
+        for (let enemy of this.enemies) {
+            level[enemy.row][enemy.col] = ENEMY;
+        }
+
+        isDirty = true;
     }
 
     draw() {
