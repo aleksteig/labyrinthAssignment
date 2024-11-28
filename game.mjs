@@ -1,8 +1,6 @@
 import {ANSI} from "./utils/ANSI.mjs";
 import SplashScreen from "./splashScreen.mjs";
 import Labyrinth from "./labyrint.mjs";
-import { TIMEOUT } from "dns";
-import { start } from "repl";
 
 console.log(ANSI.RESET, ANSI.CLEAR_SCREEN, ANSI.HIDE_CURSOR);
 

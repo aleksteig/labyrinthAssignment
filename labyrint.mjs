@@ -2,7 +2,6 @@ import {ANSI} from "./utils/ANSI.mjs";
 import KeyBoardManager from "./utils/KeyBoardManager.mjs";
 import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
-import { start } from "repl";
 
 const startingLevel = CONST.START_LEVEL_ID;
 const re_enter_first_level = CONST.FIRST_LEVEL_RE_ENTER_ID;
@@ -55,7 +54,7 @@ const DOOR_TO_LEVEL_3 = "3";
 
 let direction = -1;
 
-let items = [];
+//let items = [];  Unused part of the game
 
 const THINGS = [LOOT, EMPTY];
 const INTERACTIBLES = [DOOR_TO_LEVEL_1, DOOR_TO_LEVEL_2, DOOR_TO_LEVEL_3];
@@ -213,7 +212,6 @@ class Labyrinth {
             direction *= -1;
         }
 
-        // Find enemy coordinates and push it and their states to an alterable array
         const PATROL_LIMIT = 2;
         if (!this.enemies) {
             this.enemies = [];
@@ -223,39 +221,34 @@ class Labyrinth {
                         this.enemies.push({
                             row,
                             col,
-                            direction: 1, // Sets initial movement to the right
-                            distanceMoved: 0 // Counts the distance moved to allow for changing direction after reaching PATROL_LIMIT
+                            direction: 1, 
+                            distanceMoved: 0
                         });
                     }
                 }
             }
         }
 
-        // Clears the enemy's previous positions so as to not duplicate their position after moving
         for (let enemy of this.enemies) {
             level[enemy.row][enemy.col] = EMPTY;
         }
 
-        // Enemy movement (Only horizontal movement)
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             let enemy = this.enemies[i];
             let newRow = enemy.row;
             let newCol = enemy.col + enemy.direction;
 
-            // Checks to see if the player is nearby the enemy (to allow for attacks from above and below)
             let isPlayerNearby = 
                 (newRow === playerPos.row && newCol === playerPos.col) ||
                 (enemy.row - 1 === playerPos.row && enemy.col === playerPos.col) ||
                 (enemy.row + 1 === playerPos.row && enemy.col === playerPos.col);
 
-            // Based on if the enemy was nearby, deals up to 3 damage and removes them from the current level
             if (isPlayerNearby) {
                 let damage = Math.floor(Math.random() * 3);
                 playerStats.hp -= damage;
                 eventText = `Player lost ${damage} HP from an enemy attack!`;
                 this.lastEventTime = Date.now();
 
-                // Remove the enemy from the level to prevent constant damage
                 this.enemies.splice(i, 1);
                 level[enemy.row][enemy.col] = EMPTY;
 
@@ -263,20 +256,18 @@ class Labyrinth {
                 continue;
             }
 
-            // Checks to see if the new position of the enemy is a wall or an object and changes direction if patrol limit is reached or an object that isn't the player is hit
             let isWithinBounds = newCol >= 0 && newCol < level[newRow].length;
             if (isWithinBounds && level[newRow][newCol] === EMPTY && enemy.distanceMoved < PATROL_LIMIT) {
-                // Based on the check, moves it
+
                 enemy.col = newCol;
                 enemy.distanceMoved++;
             } else {
-                // Changes direction and sets distance moved to 0 to allow for a patrol back again
+
                 enemy.direction *= -1;
                 enemy.distanceMoved = 0;
             }
         }
 
-        // Places the enemies into the level when you re-enter a level where you killed some of them before
         for (let enemy of this.enemies) {
             level[enemy.row][enemy.col] = ENEMY;
         }
