@@ -1,5 +1,7 @@
 import { ANSI } from "./utils/ANSI.mjs";
 
+// Done in collaboration between Aleksander Teigen and Daniel Valente
+
 let outputGraphics = `
  ██▓    ▄▄▄       ▄▄▄▄ ▓██   ██▓ ██▀███   ██▓ ███▄    █ ▄▄▄█████▓ ██░ ██
 ▓██▒   ▒████▄    ▓█████▄▒██  ██▒▓██ ▒ ██▒▓██▒ ██ ▀█   █ ▓  ██▒ ▓▒▓██░ ██▒
@@ -20,7 +22,6 @@ class SplashScreen {
         this.counter = 0;
         this.counterPhase = false;
         this.buffer=outputGraphics;
-        //outputGraphics = outputGraphics.centerHorizontal();
     }
     
     update() {

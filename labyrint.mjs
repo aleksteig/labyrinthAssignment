@@ -4,7 +4,6 @@ import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
 import { start } from "repl";
 
-
 const startingLevel = CONST.START_LEVEL_ID;
 const re_enter_first_level = CONST.FIRST_LEVEL_RE_ENTER_ID;
 const secondLevel = CONST.SECOND_LEVEL_ID;
@@ -68,7 +67,7 @@ const HP_MAX = 10;
 
 const playerStats = {
     hp: 10,
-    chash: 0
+    cash: 0
 }
 
 class Labyrinth {
@@ -199,7 +198,7 @@ class Labyrinth {
             let currentItem = level[tRow][tCol];
             if (currentItem == LOOT) {
                 let loot = Math.round(Math.random() * 7) + 3;
-                playerStats.chash += loot;
+                playerStats.cash += loot;
                 eventText = `Player gained ${loot}$`;
                 this.lastEventTime = Date.now();
             }
@@ -294,9 +293,9 @@ class Labyrinth {
 
         console.log(ANSI.CLEAR_SCREEN, ANSI.CURSOR_HOME);
 
-        let rendring = "";
+        let rendering = "";
 
-        rendring += renderHud();
+        rendering += renderHud();
 
         for (let row = 0; row < level.length; row++) {
             let rowRendering = "";
@@ -309,10 +308,10 @@ class Labyrinth {
                 }
             }
             rowRendering += "\n";
-            rendring += rowRendering;
+            rendering += rowRendering;
         }
 
-        console.log(rendring);
+        console.log(rendering);
         if (eventText != "" && (Date.now() - this.lastEventTime) < this.eventDuration) {
             console.log(eventText);
         }else{
@@ -323,7 +322,7 @@ class Labyrinth {
 
 function renderHud() {
     let hpBar = `Life:[${ANSI.COLOR.RED + pad(playerStats.hp, "♥︎") + ANSI.COLOR_RESET}${ANSI.COLOR.LIGHT_GRAY + pad(HP_MAX - playerStats.hp, "♥︎") + ANSI.COLOR_RESET}]`
-    let cash = `$:${playerStats.chash}`;
+    let cash = `$:${playerStats.cash}`;
     return `${hpBar} ${cash}\n`;
 }
 
